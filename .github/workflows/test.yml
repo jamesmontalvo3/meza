@@ -14,9 +14,6 @@ jobs:
 
       - uses: actions/checkout@master
 
-      - name: Install node windows-build-tools
-        run: npm install --global --production windows-build-tools@5.2.2 --vs2015
-
       - name: apt-get update
         run: sudo apt-get update
 
