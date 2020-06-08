@@ -1,4 +1,42 @@
-name: Run tests
+name: Give it a whirl
 on:
   push:
 
+jobs:
+
+  helloworld:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: echo "$GITHUB_CONTEXT"
+
+      - uses: actions/checkout@master
+
+      - name: Install node windows-build-tools
+        run: npm install --global --production windows-build-tools@5.2.2 --vs2015
+
+      - name: apt-get update
+        run: sudo apt-get update
+
+      - name: install prereqs
+        run: sudo apt-get install apt-transport-https ca-certificates curl gnupg-agent software-properties-common
+
+      - name: get key
+        run: curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+      - name: fingerprint
+        run: sudo apt-key fingerprint 0EBFCD88
+
+      - name: Get docker repo
+        run: sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+      - name: apt-get update again
+        run: sudo apt-get update
+
+      - name: Install docker
+        run: sudo apt-get install docker-ce docker-ce-cli containerd.io
+
+      - name: run hello world
+        run: sudo docker run hello-world
