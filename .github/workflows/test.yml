@@ -5,17 +5,18 @@ on:
   pull_request:
     branches: ['**']
 
-strategy:
-  matrix:
-    test_type:
-      - monolith-from-scratch
-      - monolith-from-import
-      - import-from-remote
-      - backup-to-remote
-      - import-from-alt-remote
 
 jobs:
-  monolith:
+  run_test:
+    strategy:
+      matrix:
+        test_type:
+          - monolith-from-scratch
+          - monolith-from-import
+          - import-from-remote
+          - backup-to-remote
+          - import-from-alt-remote
+
     runs-on: ubuntu-latest
 
     steps:
