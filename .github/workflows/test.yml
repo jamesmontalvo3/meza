@@ -4,7 +4,7 @@ on:
 
 jobs:
 
-  helloworld:
+  monolith:
     runs-on: ubuntu-latest
     steps:
       - name: Context
@@ -35,5 +35,5 @@ jobs:
       - name: Install docker
         run: sudo apt-get install docker-ce docker-ce-cli containerd.io
 
-      - name: run hello world
-        run: sudo docker run hello-world
+      - name: run test
+        run: sudo bash ./tests/docker/run-tests.sh monolith-from-scratch ${PWD}
