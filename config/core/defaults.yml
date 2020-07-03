@@ -132,6 +132,9 @@ sshd_config_UsePAM: "yes"
 sshd_config_PasswordAuthentication: "yes"
 use_default_ssh_config: True
 
+# Whether to use default NTP config
+use_default_ssh_config: True
+
 #
 # Software versions
 #

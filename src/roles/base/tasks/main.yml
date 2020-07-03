@@ -221,7 +221,10 @@
   when: docker_skip_tasks is not defined or not docker_skip_tasks
 
 - name: Copy the ntp.conf template file
-  template: src=ntp.conf.j2 dest=/etc/ntp.conf
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+  when: use_default_ntp_config
   notify:
     - restart ntpd
 
