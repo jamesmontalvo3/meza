@@ -37,19 +37,8 @@ package_php_apache_deps:
 package_java: java-1.8.0-openjdk
 package_python3: python36
 package_python3_pip: python36-pip
-package_base_extras:
-  - expect
-  - expectk
-  - perl
-  - wget
-  - gcc
-  - cifs-utils
 package_nmap: nmap-ncat
 package_lua: [ 'lua', 'lua-devel' ]
-package_imagemagick:
-  - ghostscript
-  - ImageMagick
-  - ImageMagick-devel
 
 #
 # Services

@@ -1,8 +1,5 @@
 ---
-- name: Ensure Apache webserver installed
-  package:
-    name: "{{ package_apache }}"
-    state: present
+
 
 - name: Make apache own htdocs directory
   file:
@@ -20,16 +17,6 @@
     group: "{{ m_paths.mw_temp.group }}"
     mode: "{{ m_paths.mw_temp.mode }}"
 
-- name: Ensure user meza-ansible and alt-meza-ansible in group "apache"
-  user:
-    name: "{{ item }}"
-    # add onto groups
-    groups: "{{ group_apache }}"
-    append: yes
-  with_items:
-  - meza-ansible
-  - alt-meza-ansible
-
 - name: write the apache config file
   template:
     src: httpd.conf.j2
@@ -44,63 +31,19 @@
   notify:
     - restart apache
 
-- name: Install PHP
-  import_tasks: php.yml
-  # http://docs.ansible.com/ansible/playbooks_roles.html#dynamic-versus-static-includes
 
-#
-# Apache modules
-# For Debian these need to be after php.yml since repo provided there provides
-# proper version of apache php module (constraint may go away with PHP FPM)
-#
 - name: Ensure Apache modules installed (RedHat/CentOS only)
   yum:
     name:
       - mod_ssl
       - mod_proxy_html
     state: present
-  when: ansible_os_family == 'RedHat'
 
-- name: Ensure Apache modules installed (Debian only)
-  apt:
-    name:
-      - "libapache2-mod-php{{ php_debian_version }}"
-    state: present
-  when: ansible_os_family == 'Debian'
 
-- name: Ensure Apache modules enabled (Debian only)
-  apache2_module:
-    name: "{{ item }}"
-    state: present
-  with_items:
-    - proxy_html
-    - ssl
-    - rewrite
-  when: ansible_os_family == 'Debian'
 
-#
-# Composer
-#
 - name: Ensure Composer configured
   include_role:
     name: composer
-
-# - name: Ensure PHP profiling configured
-#   import_tasks: profiling.yml
-#   # http://docs.ansible.com/ansible/playbooks_roles.html#dynamic-versus-static-includes
-#   when: m_setup_php_profiling
-
-# If profiling not enabled, disable MongoDB if it exists (e.g. profiling had
-# previously been enabled)
-- name: Check if MongoDB service exists
-  stat: path=/etc/init.d/mongod
-  register: mongo_service_status
-- name: Stop MongoDB service if profiling is disabled
-  service:
-    name: mongod
-    state: stopped
-  when: mongo_service_status.stat.exists and not m_setup_php_profiling
-
 
 # Now that PHP is installed, start apache
 - name: ensure apache is running (and enable it at boot)
@@ -112,10 +55,3 @@
 
 
 
-# Might need these for SELinux to be turned back on
-# - name: Configure SELinux to start mysql on any port
-#   seboolean: name=mysql_connect_any state=true persistent=yes
-#   when: sestatus.rc != 0
-# - name: Configure SELinux to allow httpd to connect to remote database
-#   seboolean: name=httpd_can_network_connect_db state=true persistent=yes
-#   when: sestatus.rc != 0

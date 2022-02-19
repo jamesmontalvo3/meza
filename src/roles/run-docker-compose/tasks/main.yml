@@ -1,0 +1,16 @@
+- name: Ensure SSH client and SSH Daemon configs in place
+  template:
+    src: "docker-compose.yml"
+    dest: "{{ m_paths.compose_files.path }}/docker-compose.yml"
+    owner: "{{ m_paths.compose_files.owner }}"
+    group: "{{ m_paths.compose_files.group }}"
+    mode: "{{ m_paths.compose_files.mode }}"
+
+
+# docker-compose command needs TMPDIR to be executable
+# Ref: https://github.com/docker/compose/issues/1339
+environment:
+  TMPDIR: "{{ m_tmp }}"
+shell: >
+  /usr/local/bin/docker-compose up -d -f "{{ m_paths.compose_files.path }}/docker-compose.yml"
+become: true

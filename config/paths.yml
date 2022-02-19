@@ -112,6 +112,12 @@ m_paths:
     group: apache
     # recurse: TBD if we want this within m_paths
 
+  compose_files:
+    path: "{{ m_meza_data }}/compose-files"
+    mode: "u=rwX,g=rwX,o=rX"
+    owner: apache
+    group: apache
+    recurse: true
 
 #
 # LEGACY PATH SPECIFICATIONS
