@@ -1,0 +1,65 @@
+---
+# Setup docker-engine on CentOS 7
+#
+# ref: https://docs.docker.com/engine/installation/linux/centos/
+
+# This is recommended in installation guides, but since FITBox never installed
+# these this is a waste of time
+#
+# - name: Ensure CentOS-provided Docker repos are removed
+#   yum:
+#     lock_timeout: 180 # wait up to 3 minutes for a lock ansible/ansible#57189
+#     name: "{{ item }}"
+#     state: absent
+#   with_items:
+#     - docker
+#     - docker-common
+#     - container-selinux
+#     - docker-selinux
+#     - docker-engine
+#     - docker-compose
+
+- name: Ensure yum-utils present
+  yum:
+    lock_timeout: 180 # wait up to 3 minutes for a lock ansible/ansible#57189
+    name: yum-utils
+    state: present
+
+- name: Get docker-ce repo
+  shell: yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+
+# - name: Add docker repo
+#   yum_repository:
+#     name: docker-ce
+#     description: Docker repository
+#     baseurl: https://download.docker.com/linux/centos/docker-ce.repo
+#     gpgkey: https://download.docker.com/linux/centos/gpg
+#     gpgcheck: yes
+
+- name: yum makecache fast
+  shell: yum makecache fast
+  args:
+    warn: False
+
+# or specify docker-ce-{{ docker_version }}
+- name: Ensure docker-ce package installed
+  yum:
+    lock_timeout: 180 # wait up to 3 minutes for a lock ansible/ansible#57189
+    name: "docker-ce"
+    state: installed
+  notify: Restart Docker
+
+- name: Ensure Docker is running (and enable it at boot)
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ensure docker-compose installed
+  get_url:
+    url: "https://github.com/docker/compose/releases/download/{{ docker_compose_version }}/docker-compose-Linux-x86_64"
+    dest: /usr/local/bin/docker-compose
+    owner: root
+    mode: 0755
+    sha256sum: "{{ docker_compose_sha256sum }}"
+
