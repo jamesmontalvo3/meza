@@ -37,6 +37,18 @@
     permanent: yes
     state: enabled
 
+- name: Open up port 443 for https
+  firewalld:
+    port: 443/tcp
+    permanent: yes
+    state: enabled
+
+- name: Ensure latest images are pulled
+  shell: >
+    cd "{{ m_meza_data }}/canasta"
+    &&
+    {{ docker_compose_command }} -f docker-compose.yml pull --parallel
+
 - name: Ensure Canasta is running (and enable it at boot)
   service:
     name: canasta
