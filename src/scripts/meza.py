@@ -141,7 +141,7 @@ def meza_command_deploy (argv):
 
 	write_deploy_log( start, env, unique, 'start', args_string )
 
-	shell_cmd = playbook_cmd( 'site', env, more_extra_vars )
+	shell_cmd = playbook_cmd( 'deploy', env, more_extra_vars )
 	if len(argv) > 0:
 		shell_cmd = shell_cmd + argv
 

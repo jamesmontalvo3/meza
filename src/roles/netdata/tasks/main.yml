@@ -1,5 +1,5 @@
 ---
-## We're called from the site.yml playbook and the haproxy role takes care of front-end and back-end port handling
+## We're called from the deploy.yml playbook and the haproxy role takes care of front-end and back-end port handling
 ##
 ## Add test to see if it's already installed and skip if it is
 - name: Check if Netdata is present

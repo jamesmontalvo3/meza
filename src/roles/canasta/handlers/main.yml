@@ -1,0 +1,5 @@
+---
+- name: Restart Canasta
+  service:
+    name: canasta
+    state: restarted

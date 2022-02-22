@@ -1,0 +1,45 @@
+- name: Ensure Canasta latest
+  become: yes
+  become_user: "meza-ansible"
+  # Ref #1149 for TMPDIR environment var
+  environment:
+    TMPDIR: "{{ m_tmp }}"
+  git:
+    repo: https://github.com/WikiWorks/Canasta.git
+    dest: "{{ m_meza_data }}/canasta"
+    version: "3adbe2c142f775cbaa4cf84c91d53df51b9a7afe" # before caddy/varnish
+    umask: "0002"
+  tags:
+    - latest
+
+- name: Ensure canasta .env in place
+  template:
+    src: .env.j2
+    dest: "{{ m_meza_data }}/canasta/.env"
+    
+- name: Ensure systemd canasta.service file in place
+  template:
+    src: canasta.service
+    dest: /etc/systemd/system/canasta.service
+    owner: root
+    group: docker
+    mode: 0755
+
+- name: Open up firewall to https traffic
+  firewalld:
+    service: https
+    permanent: yes
+    state: enabled
+
+- name: Open up firewall to http traffic
+  firewalld:
+    service: http
+    permanent: yes
+    state: enabled
+
+- name: Ensure Canasta is running (and enable it at boot)
+  service:
+    name: canasta
+    state: started
+    enabled: yes
+  

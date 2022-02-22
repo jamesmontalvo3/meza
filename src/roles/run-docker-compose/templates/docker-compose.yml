@@ -1,0 +1,110 @@
+version: '3.1'
+services:
+  web:
+    # https://github.com/WikiWorks/Canasta/blob/master/Dockerfile
+    image: ghcr.io/wikiworks/canasta:latest
+
+    # https://github.com/wikimedia/mediawiki-docker/blob/master/1.37/apache/Dockerfile
+    # image: mediawiki:1.37.1-fpm
+    restart: unless-stopped
+    ports:
+      - "${PORT:-80}:80"
+      # - "80:80"
+      # - "443:80"
+      # for mediawiki image: - 8080:80
+    depends_on:
+      - db
+      - elasticsearch
+    links:
+      - db
+      # - memcached
+    environment:
+      # Sourced from .env
+      - MW_SITE_SERVER=${MW_SITE_SERVER:-http://localhost}
+      - PHP_UPLOAD_MAX_FILESIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
+      - PHP_POST_MAX_SIZE=${PHP_UPLOAD_MAX_FILESIZE:-10M}
+      - PHP_MAX_INPUT_VARS=${PHP_MAX_INPUT_VARS:-1000}
+      - MW_SITEMAP_SUBDIR
+      - MW_SITEMAP_IDENTIFIER
+    volumes:
+      - ./extensions:/var/www/mediawiki/w/extensions
+      - ./skins:/var/www/mediawiki/w/skins
+      - ./config:/mediawiki/config
+      - ./images:/mediawiki/images
+      - sitemap:/mediawiki/sitemap
+      # - ../simplesamlphp:/var/simplesamlphp
+
+      # from mediawiki image docs:
+      # - /var/www/html/images
+      # # After initial setup, download LocalSettings.php to the same directory as
+      # # this yaml and uncomment the following line and use compose to restart
+      # # the mediawiki service
+      # # - ./LocalSettings.php:/var/www/html/LocalSettings.php
+
+
+
+  # This key also defines the name of the database host used during setup instead of the default "localhost"
+  db:
+    image: "mariadb:10.7.1"
+    command: --default-authentication-plugin=mysql_native_password --expire_logs_days=3 --secure-file-priv=""
+    cap_add:
+      - SYS_NICE  # CAP_SYS_NICE, fix error mbind: Operation not permitted
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_HOST=%
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD:-mediawiki}
+      - MYSQL_DATABASE=mediawiki
+
+    # From one of my apps
+    # environment:
+    #   MYSQL_DATABASE: maqh
+    #   MYSQL_USER: maqhuser
+    #   MYSQL_PASSWORD: "1234"
+    #   MYSQL_ROOT_PASSWORD: "toor"
+
+    # From https://registry.hub.docker.com/_/mediawiki/
+    # # @see https://phabricator.wikimedia.org/source/mediawiki/browse/master/includes/DefaultSettings.php
+    # MYSQL_DATABASE: my_wiki
+    # MYSQL_USER: wikiuser
+    # MYSQL_PASSWORD: example
+    # MYSQL_RANDOM_ROOT_PASSWORD: 'yes'
+
+
+    volumes:
+      - ./_initdb:/docker-entrypoint-initdb.d
+      - mysql-data-volume:/var/lib/mysql
+
+      # - ./docker/db:/docker-entrypoint-initdb.d
+      # - persistent:/var/lib/mysql
+      # - ./docker/more.cnf:/etc/mysql/conf.d/more.cnf
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.8.20
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - elasticsearch:/usr/share/elasticsearch/data
+
+  memcached:
+    image: memcached:1.6.14
+    # image: memcached:1.6.14-alpine
+    ports:
+      - "11211:11211"
+    networks:
+      - default
+    restart: always
+
+volumes:
+  mysql-data-volume:
+  elasticsearch:
+  sitemap:
+
+# volumes:
+#   persistent:

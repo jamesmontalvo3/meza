@@ -1,0 +1,14 @@
+[Unit]
+Description=Service providing MediaWiki services
+Requires=docker.service
+After=docker.service
+[Service]
+Restart=always
+User=root
+Group=docker
+WorkingDirectory=/opt/data-meza/canasta
+ExecStartPre={{ docker_compose_command }} -f docker-compose.yml down
+ExecStart={{ docker_compose_command }} -f docker-compose.yml up --remove-orphans
+ExecStop={{ docker_compose_command }} -f docker-compose.yml down
+[Install]
+WantedBy=multi-user.target
